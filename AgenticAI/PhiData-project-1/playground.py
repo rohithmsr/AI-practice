@@ -5,13 +5,15 @@ from phi.model.groq import Groq
 from phi.tools.yfinance import YFinanceTools
 from phi.tools.googlesearch import GoogleSearch
 from phi.playground import Playground, serve_playground_app
+from dotenv import load_dotenv
+load_dotenv()
 
 phi.api = os.getenv("PHI_API_KEY")
 
 web_search_agent = Agent(
     name="Web Search Agent",
     role="You are an agent that helps users find the latest information.",
-    model=Groq(id="llama3-groq-70b-8192-tool-use-preview"),
+    model=Groq(id="llama-3.3-70b-versatile"),
     tools=[GoogleSearch()],
     instructions=["Always include sources in the search results"],
     show_tool_calls=True,
@@ -21,7 +23,7 @@ web_search_agent = Agent(
 financial_agent = Agent(
     name="Financial AI Agent",
     role="This agent provides financial information",
-    model=Groq(id="llama3-groq-70b-8192-tool-use-preview"),
+    model=Groq(id="llama-3.3-70b-versatile"),
     tools=[YFinanceTools(
         stock_price=True,
         analyst_recommendations=True,
@@ -33,7 +35,19 @@ financial_agent = Agent(
     markdown=True
 )
 
-app = Playground(agents=[financial_agent, web_search_agent]).get_app()
+multi_ai_agent = Agent(
+    name="Finance Agent connected to the Internet",
+    team=[web_search_agent, financial_agent],
+    model=Groq(id="llama-3.3-70b-versatile"),
+    instructions=[
+        "Use the web search agent to find information",
+        "Use the financial AI agent to provide financial data"
+    ],
+    markdown=True,
+    show_tool_calls=True
+)
+
+app = Playground(agents=[multi_ai_agent]).get_app()
 
 if __name__ == "__main__":
     serve_playground_app("playground:app", reload=True)
