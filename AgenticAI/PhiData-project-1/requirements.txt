@@ -11,3 +11,6 @@ groq
 openai
 fastapi[standard]
 sqlalchemy
+pgvector
+psycopg[binary]
+pypdf
